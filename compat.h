@@ -76,12 +76,18 @@ union nf_inet_addr {
 #  define BEFORE2632(x,y)
 # endif
 
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(6,12,0)
+#  define PROC_CTL_TABLE const struct ctl_table
+# ifndef HAVE_GRSECURITY_H
+#  define ctl_table_no_const struct ctl_table
+# endif /* since 6.12.0 */
+# else
 # if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
-#  define ctl_table struct ctl_table
+#  define PROC_CTL_TABLE struct ctl_table
 # endif
-
 # ifndef HAVE_GRSECURITY_H
 #  define ctl_table_no_const ctl_table
+# endif /* since 3.17.0 */
 # endif
 #endif
 
@@ -216,6 +222,7 @@ struct timeval {
 	long tv_usec; /* microseconds */
 };
 
+unsigned long timeval_to_jiffies(const struct timeval *tv);
 unsigned long timeval_to_jiffies(const struct timeval *tv)
 {
 	return timespec64_to_jiffies(&(struct timespec64){
@@ -381,8 +388,10 @@ static int sockaddr_cmp(const struct sockaddr_storage *sa1, const struct sockadd
 }
 
 #ifndef IN6PTON_XDIGIT
+
 #define hex_to_bin compat_hex_to_bin
 /* lib/hexdump.c */
+int hex_to_bin(char ch);
 int hex_to_bin(char ch)
 {
 	if ((ch >= '0') && (ch <= '9'))
@@ -624,29 +633,6 @@ out:
 # define last_tv64	last
 #endif
 
-/* Offset changes made in 613dbd95723aee7abd16860745691b6c7bda20dc */
-#ifndef HAVE_XT_FAMILY
-# if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35)
-#  define xt_action_param xt_target_param
-# endif
-static inline u_int8_t xt_family(const struct xt_action_param *par)
-{
-	return par->family;
-}
-static inline const struct net_device *xt_in(const struct xt_action_param *par)
-{
-	return par->in;
-}
-static inline const struct net_device *xt_out(const struct xt_action_param *par)
-{
-	return par->out;
-}
-static inline unsigned int xt_hooknum(const struct xt_action_param *par)
-{
-	return par->hooknum;
-}
-#endif
-
 #ifndef SK_CAN_REUSE
 # define SK_CAN_REUSE   1
 #endif
@@ -711,40 +697,6 @@ static inline void do_gettimeofday(struct timeval *tv)
 	tv->tv_usec = ts64.tv_nsec/1000;
 }
 #endif
-
-#define TOLOWER(x) ((x) | 0x20)
-unsigned long long strtoul(const char *cp, char **endp, unsigned int base)
-{
-	unsigned long long result = 0;
-
-	if (!base) {
-		if (cp[0] == '0') {
-			if (TOLOWER(cp[1]) == 'x' && isxdigit(cp[2]))
-				base = 16;
-			else
-				base = 8;
-		} else {
-			base = 10;
-		}
-	}
-
-	if (base == 16 && cp[0] == '0' && TOLOWER(cp[1]) == 'x')
-		cp += 2;
-
-	while (isxdigit(*cp)) {
-		unsigned int value;
-
-		value = isdigit(*cp) ? *cp - '0' : TOLOWER(*cp) - 'a' + 10;
-		if (value >= base)
-			break;
-		result = result * base + value;
-		cp++;
-	}
-	if (endp)
-		*endp = (char *)cp;
-
-	return result;
-}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,12,0)
 /*

@@ -68,7 +68,13 @@
 # include <net/netfilter/nf_conntrack_core.h>
 #endif
 #include <linux/version.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,5,0)
+#include <linux/unaligned.h>
+#else
 #include <asm/unaligned.h>
+#endif
+
 #ifdef HAVE_LLIST
 	/* llist.h is officially defined since linux 3.1,
 	 * but centos6 have it backported on its 2.6.32.el6 */
@@ -946,7 +952,7 @@ static int snmp_seq_open(struct inode *inode, struct file *file)
 	return single_open(file, snmp_seq_show, NULL);
 }
 
-#ifdef HAVE_PROC_OPS
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
 static struct proc_ops nf_seq_fops = {
 	.proc_open	= nf_seq_open,
 	.proc_read	= seq_read,
@@ -963,7 +969,7 @@ static struct file_operations nf_seq_fops = {
 };
 #endif
 
-#ifdef HAVE_PROC_OPS
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) 
 static struct proc_ops snmp_seq_fops = {
 	.proc_open	= snmp_seq_open,
 	.proc_read	= seq_read,
@@ -1231,7 +1237,7 @@ static int flows_seq_release(struct inode *inode, struct file *file)
 	return seq_release_private(inode, file);
 }
 
-#ifdef HAVE_PROC_OPS
+#if  LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
 static struct proc_ops flows_seq_fops = {
 	.proc_open	= flows_seq_open,
 	.proc_read	= seq_read,
@@ -1519,7 +1525,7 @@ unlock:
 
 #ifdef CONFIG_SYSCTL
 /* sysctl /proc/sys/net/netflow */
-static int hsize_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int hsize_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret, hsize;
@@ -1536,7 +1542,7 @@ static int hsize_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp
 		return ret;
 }
 
-static int sndbuf_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int sndbuf_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1571,7 +1577,7 @@ static int sndbuf_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *fil
 }
 
 static void free_templates(void);
-static int destination_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int destination_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1588,7 +1594,7 @@ static int destination_procctl(ctl_table *ctl, int write, BEFORE2632(struct file
 }
 
 #ifdef ENABLE_AGGR
-static int aggregation_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int aggregation_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1603,7 +1609,7 @@ static int aggregation_procctl(ctl_table *ctl, int write, BEFORE2632(struct file
 #endif
 
 #ifdef ENABLE_PROMISC
-static int promisc_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int promisc_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int newpromisc = promisc;
@@ -1620,7 +1626,7 @@ static int promisc_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *fi
 
 #ifdef ENABLE_SAMPLER
 static int parse_sampler(char *ptr);
-static int sampler_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int sampler_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1653,7 +1659,7 @@ static int sampler_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *fi
 
 #ifdef SNMP_RULES
 static int add_snmp_rules(char *ptr);
-static int snmp_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int snmp_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
        int ret;
@@ -1678,7 +1684,7 @@ static void clear_ipt_netflow_stat(void)
 	}
 }
 
-static int flush_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int flush_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1707,7 +1713,7 @@ static int flush_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp
 	return ret;
 }
 
-static int protocol_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int protocol_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1740,7 +1746,7 @@ static int protocol_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *f
 #ifdef CONFIG_NF_NAT_NEEDED
 static void register_ct_events(void);
 static void unregister_ct_events(void);
-static int natevents_procctl(ctl_table *ctl, int write, BEFORE2632(struct file *filp,)
+static int natevents_procctl(PROC_CTL_TABLE *ctl, int write, BEFORE2632(struct file *filp,)
 			 void __user *buffer, size_t *lenp, loff_t *fpos)
 {
 	int ret;
@@ -1766,7 +1772,7 @@ static struct ctl_table_header *netflow_sysctl_header;
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 #define _CTL_NAME(x) .ctl_name = x,
-static void ctl_table_renumber(ctl_table *table)
+static void ctl_table_renumber(PROC_CTL_TABLE *table)
 {
 	int c;
 
@@ -1777,7 +1783,7 @@ static void ctl_table_renumber(ctl_table *table)
 #define _CTL_NAME(x)
 #define ctl_table_renumber(x)
 #endif
-static ctl_table netflow_sysctl_table[] = {
+static ctl_table_no_const netflow_sysctl_table[] = {
 	{
 		.procname	= "active_timeout",
 		.mode		= 0644,
@@ -1909,7 +1915,7 @@ static ctl_table netflow_sysctl_table[] = {
 };
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
-static ctl_table netflow_sysctl_root[] = {
+static PROC_CTL_TABLE netflow_sysctl_root[] = {
 	{
 		_CTL_NAME(33)
 		.procname	= "netflow",
@@ -1919,7 +1925,7 @@ static ctl_table netflow_sysctl_root[] = {
 	{ }
 };
 
-static ctl_table netflow_net_table[] = {
+static PROC_CTL_TABLE netflow_net_table[] = {
 	{
 		.ctl_name	= CTL_NET,
 		.procname	= "net",
@@ -2396,7 +2402,7 @@ static int add_destinations(const char *ptr)
 				++end;
 			if (succ &&
 			    (*end == ':' || *end == '.' || *end == 'p' || *end == '#'))
-				sin6->sin6_port = htons(strtoul(++end, (char **)&end, 0));
+				sin6->sin6_port = htons(simple_strtoul(++end, (char **)&end, 0));
 			if (succ && *end == '@') {
 				++end;
 				sout->sin6_family = AF_INET6;
@@ -2411,7 +2417,7 @@ static int add_destinations(const char *ptr)
 			sin->sin_port = htons(2055);
 			succ = in4_pton(ptr, len, (u8 *)&sin->sin_addr, -1, &end);
 			if (succ && *end == ':')
-				sin->sin_port = htons(strtoul(++end, (char **)&end, 0));
+				sin->sin_port = htons(simple_strtoul(++end, (char **)&end, 0));
 			if (succ && *end == '@') {
 				++end;
 				sout->sin_family = AF_INET;
@@ -3534,7 +3540,7 @@ static inline __u8 hook2dir(const __u8 hooknum)
 }
 #endif
 
-#ifndef HAVE_PUT_UNALIGNED_BE24
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,7,0)
 static inline void put_unaligned_be24(u32 val, unsigned char *p)
 {
 	*p++ = val >> 16;
@@ -4087,7 +4093,7 @@ static int ethtool_drvinfo(unsigned char *ptr, size_t size, struct net_device *d
 		ops->get_drvinfo(dev, &info);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 	else if (dev->dev.parent && dev->dev.parent->driver) {
-		strlcpy(info.driver, dev->dev.parent->driver->name, sizeof(info.driver));
+		strscpy(info.driver, dev->dev.parent->driver->name, sizeof(info.driver));
 	}
 #endif
 	n = scnprintf(ptr, len, "%s", info.driver);
@@ -5562,6 +5568,12 @@ static struct ipt_target ipt_netflow_reg[] __read_mostly = {
 	},
 };
 
+
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+# define HAVE_PROC_OPS
+#endif
+
 #ifdef CONFIG_PROC_FS
 static int register_stat(const char *name,
 # ifdef HAVE_PROC_OPS
@@ -5575,21 +5587,11 @@ static int register_stat(const char *name,
 
 	printk(KERN_INFO "netflow: registering: /proc/net/stat/%s\n", name);
 
-# if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
-	proc_stat = create_proc_entry(name, S_IRUGO, INIT_NET(proc_net_stat));
-# else
 	proc_stat = proc_create(name, S_IRUGO, INIT_NET(proc_net_stat), fops);
-# endif
 	if (!proc_stat) {
 		printk(KERN_ERR "Unable to create /proc/net/stat/%s entry\n", name);
 		return 0;
 	}
-# if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
-	proc_stat->proc_fops = fops;
-# endif
-# if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
-	proc_stat->owner = THIS_MODULE;
-# endif
 	printk(KERN_INFO "netflow: registered: /proc/net/stat/%s\n", name);
 	return 1;
 }
@@ -5613,7 +5615,7 @@ static int __init ipt_netflow_init(void)
 
 	if (!hashsize) {
 		/* use 1/1024 of memory, 1M for hash table on 1G box */
-		unsigned long memksize = (num_physpages << PAGE_SHIFT) / 1024;
+		unsigned long memksize = (get_num_physpages() << PAGE_SHIFT) / 1024;
 
 		if (memksize > (5 * 1024 * 1024))
 			memksize = 5 * 1024 * 1024;
@@ -5688,7 +5690,7 @@ static int __init ipt_netflow_init(void)
 	if (!destination)
 		destination = destination_buf;
 	if (destination != destination_buf) {
-		strlcpy(destination_buf, destination, sizeof(destination_buf));
+		strscpy(destination_buf, destination, sizeof(destination_buf));
 		destination = destination_buf;
 	}
 	if (add_destinations(destination) < 0)
@@ -5698,7 +5700,7 @@ static int __init ipt_netflow_init(void)
 	if (!aggregation)
 		aggregation = aggregation_buf;
 	if (aggregation != aggregation_buf) {
-		strlcpy(aggregation_buf, aggregation, sizeof(aggregation_buf));
+		strscpy(aggregation_buf, aggregation, sizeof(aggregation_buf));
 		aggregation = aggregation_buf;
 	}
 	add_aggregation(aggregation);
@@ -5708,7 +5710,7 @@ static int __init ipt_netflow_init(void)
 	if (!sampler)
 		sampler = sampler_buf;
 	if (sampler != sampler_buf) {
-		strlcpy(sampler_buf, sampler, sizeof(sampler_buf));
+		strscpy(sampler_buf, sampler, sizeof(sampler_buf));
 		sampler = sampler_buf;
 	}
 	parse_sampler(sampler);
