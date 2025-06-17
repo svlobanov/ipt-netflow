@@ -69,7 +69,7 @@
 #endif
 #include <linux/version.h>
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,5,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,12,0)
 #include <linux/unaligned.h>
 #else
 #include <asm/unaligned.h>
