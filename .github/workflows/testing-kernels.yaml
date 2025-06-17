@@ -1,5 +1,5 @@
 # github workflow to test ipt-netflow on various vanilla kernels
-name: Kernels Build and Test
+name: Kernels Build and Test1
 on:
 # manually triggered workflow
   workflow_dispatch:
