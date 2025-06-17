@@ -17,6 +17,11 @@ fatal() {
 eval $(grep ^KDIR Makefile | tr -d ' ')
 [ "$KDIR" ] || fatal "KDIR is not found"
 
+# if KDIR is not absolute, make it relative to this script
+if [ "${KDIR:0:1}" != "/" ]; then
+  KDIR="$(pwd)/$KDIR"
+fi
+
 WD=cc-test-build
 mkdir -p $WD
 cd ./$WD || fatal "cannot cd to $WD"
