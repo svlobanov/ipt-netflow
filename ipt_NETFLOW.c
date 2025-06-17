@@ -1911,7 +1911,9 @@ static ctl_table_no_const netflow_sysctl_table[] = {
 		.proc_handler	= &natevents_procctl,
 	},
 #endif
+# if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0) 
 	{ }
+# endif
 };
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
@@ -1922,7 +1924,9 @@ static PROC_CTL_TABLE netflow_sysctl_root[] = {
 		.mode		= 0555,
 		.child		= netflow_sysctl_table,
 	},
+# if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)	
 	{ }
+# endif	
 };
 
 static PROC_CTL_TABLE netflow_net_table[] = {
@@ -1932,7 +1936,9 @@ static PROC_CTL_TABLE netflow_net_table[] = {
 		.mode		= 0555,
 		.child		= netflow_sysctl_root,
 	},
+# if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	{ }
+# endif	
 };
 #else /* >= 2.6.25 */
 # ifdef HAVE_REGISTER_SYSCTL_PATHS
@@ -1944,7 +1950,10 @@ static struct ctl_path netflow_sysctl_path[] = {
 #  endif
 	},
 	{ .procname = "netflow" },
+# if LINUX_VERSION_CODE < KERNEL_VERSION(6,11,0)
 	{ }
+# endif
+
 };
 # endif
 #endif /* 2.6.25 */
@@ -5677,7 +5686,13 @@ static int __init ipt_netflow_init(void)
 # ifdef HAVE_REGISTER_SYSCTL_PATHS
 	netflow_sysctl_header = register_sysctl_paths(netflow_sysctl_path, netflow_sysctl_table);
 # else
+
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(6,11,0)
+	netflow_sysctl_header = register_sysctl_sz("net/netflow", netflow_sysctl_table, ARRAY_SIZE(netflow_sysctl_table));
+# else
 	netflow_sysctl_header = register_sysctl("net/netflow", netflow_sysctl_table);
+# endif
+
 # endif
 #endif
 	if (!netflow_sysctl_header) {
