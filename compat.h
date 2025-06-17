@@ -751,4 +751,8 @@ static inline bool netif_is_bridge_port(const struct net_device *dev)
 }
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,15,0)
+# define del_timer_sync timer_delete_sync
+#endif
+
 #endif /* COMPAT_NETFLOW_H */
