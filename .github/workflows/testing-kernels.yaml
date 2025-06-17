@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         kernel-version: [6.12.33, 6.15.2, 6.6.93, 6.1.141, 5.15.185, 5.10.238, 5.4.294]
-    name: Build and Test ipt-netflow on Kernel ${{ matrix.kernel-version }}    
+    name: Test with ${{ matrix.kernel-version }}    
     steps:
         - name: Checkout repository
           uses: actions/checkout@v2
@@ -26,7 +26,14 @@ jobs:
             sudo apt-get install -y flex bison libelf-dev bc libxtables-dev pkg-config dkms libxtables-dev pkg-config
         - name: Download kernel
           run: |
-            wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${{ matrix.kernel-version }}.tar.xz
+            # if kernel is 6. we use v6.x, otherwise we use v5.x
+            if [[ "${{ matrix.kernel-version }}" == 6.* ]]; then
+              KERNEL_URL="https://cdn.kernel.org/pub/linux/kernel/v6.x";
+            else
+              KERNEL_URL="https://cdn.kernel.org/pub/linux/kernel/v5.x";
+            fi
+            echo "Downloading kernel from $KERNEL_URL"
+            wget $KERNEL_URL/linux-${{ matrix.kernel-version }}.tar.xz
         - name: Extract kernel source
           run: |
             tar -xf linux-${{ matrix.kernel-version }}.tar.xz
