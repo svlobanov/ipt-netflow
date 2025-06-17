@@ -77,19 +77,19 @@ union nf_inet_addr {
 # endif
 
 # if LINUX_VERSION_CODE >= KERNEL_VERSION(6,12,0)
+#  pragma message "Kernel version >= 6.12.0 detected, using new ctl_table definitions."
 #  define PROC_CTL_TABLE const struct ctl_table
 # ifndef HAVE_GRSECURITY_H
 #  define ctl_table_no_const struct ctl_table
 # endif /* since 6.12.0 */
 # else
-# if LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)
-#  define PROC_CTL_TABLE struct ctl_table
-# endif
+#  pragma message "Kernel version < 6.12.0 detected, using old ctl_table definitions."
+# define PROC_CTL_TABLE struct ctl_table
 # ifndef HAVE_GRSECURITY_H
-#  define ctl_table_no_const ctl_table
-# endif /* since 3.17.0 */
+#  define ctl_table_no_const struct ctl_table
 # endif
-#endif
+# endif
+#endif /* CONFIG_SYSCTL */
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0)
 # define compat_hlist_for_each_entry			hlist_for_each_entry
