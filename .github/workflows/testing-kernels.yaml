@@ -11,6 +11,7 @@ jobs:
   test-kernels:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         kernel-version: [6.12.33, 6.15.2, 6.6.93, 6.1.141, 5.15.185, 5.10.238, 5.4.294]
     name: Test with ${{ matrix.kernel-version }}    
