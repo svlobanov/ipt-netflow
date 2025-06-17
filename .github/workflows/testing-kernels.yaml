@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        kernel-version: [6.12.33]
+        kernel-version: [6.12.33, 6.15.2, 6.6.93, 6.1.141, 5.15.185, 5.10.238, 5.4.294]
     name: Build and Test ipt-netflow on Kernel ${{ matrix.kernel-version }}    
     steps:
         - name: Checkout repository
