@@ -1,0 +1,49 @@
+# github workflow to test ipt-netflow on various vanilla kernels
+name: Kernels Build and Test
+on:
+# manually triggered workflow
+  workflow_dispatch:
+
+#    pull_request:
+#    branches:
+#      - main
+jobs:
+  test-kernels:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        kernel-version: [6.12.33]
+    name: Build and Test ipt-netflow on Kernel ${{ matrix.kernel-version }}    
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+          with:
+            fetch-depth: 0  # Fetch all history for all branches and tags
+            path: ipt-netflow
+        - name: Install dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y flex bison libelf-dev bc libxtables-dev pkg-config      
+        - name: Download kernel
+          run: |
+            wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${{ matrix.kernel-version }}.tar.xz
+        - name: Extract kernel source
+          run: |
+            tar -xf linux-${{ matrix.kernel-version }}.tar.xz
+        - name: Configure and build kernel
+          run: |
+            cd linux-${{ matrix.kernel-version }}
+            make defconfig
+            echo 'CONFIG_NETFILTER_ADVANCED=y' >> myoptions.config
+            echo 'CONFIG_BRIDGE=y' >> myoptions.config
+            echo 'CONFIG_BRIDGE_NETFILTER=y' >> myoptions.config
+            echo 'CONFIG_NF_CONNTRACK_EVENTS=y' >> myoptions.config
+            ./scripts/kconfig/merge_config.sh .config myoptions.config
+            make -j$(nproc)
+            cd ..
+        - name: Build ipt-netflow
+          run: |
+            ls -la
+            cd ipt-netflow
+            ./configure --kdir=../linux-${{ matrix.kernel-version }}
+            make
